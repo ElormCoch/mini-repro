@@ -1,11 +1,6 @@
 // Copyright (C) Microsoft Corporation. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// This uses the async import pattern. This is because the file won't be
-// injected until runtime and the async import makes sure it waits to import
-// until the file exists.
-
   
   // This enum is a replicate of the enum in edge_find_on_page.mojom. Look that
   // file up for more information.

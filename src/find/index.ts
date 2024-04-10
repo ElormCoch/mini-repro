@@ -6,29 +6,10 @@ import {
   ShorelineFindResultCollectionState
 } from './sidebar-search-find-on-page-mojom';
 
-import { result , newResult } from './mock-data-results';
+import { result  } from './mock-data-results';
 
 export const template = html<MyApp>`
   <template>
-    <div class="total-label"><slot></slot>:</div>
-
-    <span class="controls">
-      <button
-        class="control-decrease"
-        @click="${x => x.decrement()}"
-        aria-label="decrease"
-      >
-        -
-      </button>
-      <span class="count" part="count">${x => x.value}</span>
-      <button
-        class="control-increase"
-        @click="${x => x.increment()}"
-        aria-label="increase"
-      >
-        +
-      </button>
-    </span>
     <div id="main-view-container">
     <find-on-page-main-view
     id="main-view"
@@ -53,36 +34,6 @@ export const styles = css`
     justify-content: center;
   }
 
-  .controls {
-    display: flex;
-    justify-content: space-between;
-    display: inline-flex;
-    margin-bottom: 1rem;
-  }
-
-  .control-decrease {
-    font-size: 1.5rem;
-    padding: 0.75rem 1rem;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-
-  .control-increase {
-    font-size: 1.5rem;
-    padding: 0.75rem 1rem;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-
-  .count {
-    font-size: 1.5rem;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-    width: 100%;
-    border: solid var(--border-size) var(--border-color);
-    margin: 0 calc(var(--border-size) * -1);
-  }
-
   button {
     line-height: 1;
     cursor: pointer;
@@ -101,8 +52,6 @@ export const styles = css`
   }
 
 `;
-
-
 
 @customElement({
   name: 'find-on-page',
@@ -204,7 +153,6 @@ export class MyApp extends FASTElement {
   public async selectMatch(identifier: number, matchIndex: number): Promise<void> {
     console.log('Match Index', matchIndex)
     const selection_result: any = { response: MatchSelectionResult.kSuccess };
-       
     document.dispatchEvent(new CustomEvent("IndexUpdate", {
       detail: { result },
       bubbles: true,
@@ -221,29 +169,6 @@ export class MyApp extends FASTElement {
           `contextual-find-result-${identifier}`);
 
       contextualResult?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-    }
-  }
-
-  increment(): void {
-    this.resetNonNumbers();
-    this.value++;
-    this.sendUpdate();
-  }
-
-  decrement(): void {
-    this.resetNonNumbers();
-    this.value--;
-    this.sendUpdate();
-  }
-
-  private sendUpdate() {
-    this.$emit('updated', this.value);
-  }
-
-  private resetNonNumbers() {
-    if (isNaN(this.value)) {
-      this.value = 0;
     }
   }
 }
