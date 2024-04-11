@@ -1,7 +1,48 @@
-import { ShorelineFindResultCollection, ShorelineFindResultCollectionState } from "./sidebar-search-find-on-page-mojom";
+import { FASTElement, customElement, observable, html, when } from '@microsoft/fast-element';
+import { ShorelineFindResultCollection, ShorelineFindResultCollectionState, ShorelineFindResult } from "./sidebar-search-find-on-page-mojom";
+
+// make this a class, @observable decorator from fast, for matchSurro
+export class ShorelineFindResultAsClass {
+
+    @observable findResultCollectionState: ShorelineFindResultCollectionState;
+    @observable numberOfMatches: number;
+    @observable activeMatchOrdinal: number;
+    @observable matchSurroundingTexts!: ShorelineFindResult[];
+
+    constructor(findResultCollectionState: ShorelineFindResultCollectionState, numberOfMatches: number,
+        activeMatchOrdinal: number,
+        matchSurroundingTexts: ShorelineFindResult[]) {
+        this.findResultCollectionState = findResultCollectionState;
+        this.numberOfMatches = numberOfMatches;
+        this.activeMatchOrdinal = activeMatchOrdinal;
+        this.matchSurroundingTexts = matchSurroundingTexts;
+    }
+
+    setActiveMatchIndex(number: any) {
+        this.activeMatchOrdinal = number;
+    }
+
+    setResult(findResultCollectionState: ShorelineFindResultCollectionState, numberOfMatches: number,
+        activeMatchOrdinal: number,
+        matchSurroundingTexts: ShorelineFindResult[]) {
+        this.findResultCollectionState = findResultCollectionState;
+        this.numberOfMatches = numberOfMatches;
+        this.activeMatchOrdinal = activeMatchOrdinal;
+        this.matchSurroundingTexts = matchSurroundingTexts;
+    }
+
+    getResult(): ShorelineFindResultCollection {
+        return {
+            findResultCollectionState: this.findResultCollectionState,
+            numberOfMatches: this.numberOfMatches,
+            activeMatchOrdinal: this.activeMatchOrdinal,
+            matchSurroundingTexts: this.matchSurroundingTexts,
+        }
+    }
+}
 
 export const result: ShorelineFindResultCollection = {
-    findResultCollectionState: ShorelineFindResultCollectionState.kOkResult, 
+    findResultCollectionState: ShorelineFindResultCollectionState.kOkResult,
     numberOfMatches: 12,
     activeMatchOrdinal: 1,
     matchSurroundingTexts: [
