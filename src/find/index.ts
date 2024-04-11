@@ -6,18 +6,20 @@ import {
   ShorelineFindResultCollectionState
 } from './sidebar-search-find-on-page-mojom';
 
-import { result  } from './mock-data-results';
+import { ShorelineFindResultAsClass, result  } from './mock-data-results';
 
 export const template = html<MyApp>`
   <template>
     <div id="main-view-container">
-    <find-on-page-main-view
-    id="main-view"
-    :activeMatchOrdinal="${x => x.activeMatchOrdinal}"
-    :matchSurroundingTexts="${x => x.matchSurroundingTexts}"
-    :findResultState="${x => x.findResultState}"
-    :selectMatchCallback="${x => x.selectMatch}"
-</find-on-page-main-view></div>
+      <find-on-page-main-view
+        id="main-view"
+        :activeMatchOrdinal="${x => x.activeMatchOrdinal}"
+        :matchSurroundingTexts="${x => x.matchSurroundingTexts}"
+        :findResultState="${x => x.findResultState}"
+        :selectMatchCallback="${x => x.selectMatch}"
+        :resultAsClass="${x => x.resultAsClass}"
+      </find-on-page-main-view>
+    </div>
   </template>
 `;
 export const styles = css`
@@ -59,34 +61,62 @@ export const styles = css`
   styles,
 })
 export class MyApp extends FASTElement {
-  @attr value = 0;
   private _findResultState: ShorelineFindResultCollectionState
     = ShorelineFindResultCollectionState.kInitialState;
   private _numberOfMatches: number = -1;
   private _activeMatchOrdinal: number = -1;
   private _matchSurroundingTexts: ShorelineFindResult[] = [];
 
+  // try refactor with result into class containing observable matchingSurroundingTexts array
+  private _resultAsClass: ShorelineFindResultAsClass =
+    new ShorelineFindResultAsClass(
+      ShorelineFindResultCollectionState.kInitialState,
+      /*number of matches */-1,
+      /*activeMatchOrdinal*/ -1,
+      /*matchSurroundingTexts*/[]);
+
   public connectedCallback(): void {
-    console.log("connected")
     super.connectedCallback();
     // simulate browser pageCallback router listener for initial results list
     setTimeout(() => {
-      this.findResultState = result.findResultCollectionState;
-      this.numberOfMatches = result.numberOfMatches;
-      this.activeMatchOrdinal = result.activeMatchOrdinal;
-      this.matchSurroundingTexts = result.matchSurroundingTexts;
-    }, 200)
+      this._resultAsClass.setResult(
+        result.findResultCollectionState,
+        result.numberOfMatches,
+        result.activeMatchOrdinal,
+        result.matchSurroundingTexts);
+      
+      // this.findResultState = result.findResultCollectionState;
+      // this.numberOfMatches = result.numberOfMatches;
+      // this.activeMatchOrdinal = result.activeMatchOrdinal;
+      // this.matchSurroundingTexts = result.matchSurroundingTexts;
+    }, 1000)
 
     // simulate browser page back listener with event callback each time click event happens
     document.addEventListener('IndexUpdate', (event) => {
-      const { result } = (event as CustomEvent)?.detail;
-      console.log('IndexUpdate', result);
-      this.findResultState = result.findResultCollectionState;
-      this.numberOfMatches = result.numberOfMatches;
-      this.activeMatchOrdinal = result.activeMatchOrdinal;
-      this.matchSurroundingTexts = result.matchSurroundingTexts;
+      const { result, resultAsClass } = (event as CustomEvent)?.detail;
+      console.log('IndexUpdate', resultAsClass._activeMatchOrdinal);
+
+      // this.findResultState = result.findResultCollectionState;
+      // this.numberOfMatches = result.numberOfMatches;
+      // this.activeMatchOrdinal = result.activeMatchOrdinal;
+      // this.matchSurroundingTexts = result.matchSurroundingTexts;
+
+      // testing 
+      this.resultAsClass = resultAsClass;
     })
   }
+
+  get resultAsClass(): ShorelineFindResultAsClass {
+    Observable.track(this, 'resultAsClass');
+    return this._resultAsClass;
+  }
+
+  set resultAsClass(value: ShorelineFindResultAsClass) {
+    console.log("setting Result as class", value)
+    this._resultAsClass = value;
+    Observable.notify(this, 'resultAsClass');
+  }
+
 
   get numberOfMatches(): number {
     Observable.track(this, 'numberOfMatches');
@@ -151,10 +181,12 @@ export class MyApp extends FASTElement {
   }
 
   public async selectMatch(identifier: number, matchIndex: number): Promise<void> {
-    console.log('Match Index', matchIndex)
     const selection_result: any = { response: MatchSelectionResult.kSuccess };
+    this.resultAsClass.setActiveMatchIndex(matchIndex);
+    console.log('ordinal', this.resultAsClass.activeMatchOrdinal)
+    
     document.dispatchEvent(new CustomEvent("IndexUpdate", {
-      detail: { result },
+      detail: { resultAsClass: this.resultAsClass},
       bubbles: true,
       cancelable: true,
       composed: false

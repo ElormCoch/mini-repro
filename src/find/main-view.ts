@@ -21,6 +21,7 @@ import {
     ShorelineFindResult,
     ShorelineFindResultCollectionState,
   } from './sidebar-search-find-on-page-mojom';
+import { ShorelineFindResultAsClass } from './mock-data-results';
 
   const styles = css`
   :host {
@@ -108,7 +109,7 @@ import {
 export const contextualResultsTemplate =
   (activeMatchOrdinal: number, onFindMatchContextualResultClicked: any): any =>
     html`
-        ${repeat(x => x.matchSurroundingTexts, html<ShorelineFindResult>`
+        ${repeat(x => x.resultAsClass.matchSurroundingTexts, html<ShorelineFindResult>`
                 <div
                   id='contextual-find-result-${x => x.identifier}'
                   @click="${(x, c) => onFindMatchContextualResultClicked(x.identifier, c.index)}"
@@ -133,19 +134,19 @@ export const contextualResultsTemplate =
   template:
   html<FindOnPageMainView>`
     <div id="contextual-result-container">
-      ${when(x => x.findResultState === ShorelineFindResultCollectionState.kInitialState,
+      ${when(x => x.resultAsClass.findResultCollectionState === ShorelineFindResultCollectionState.kInitialState,
     html`${initialStateFluentCardTemplate()}`
   )}
-      ${when(x => x.findResultState === ShorelineFindResultCollectionState.kOkResult,
+  ${when(x => x.resultAsClass.findResultCollectionState === ShorelineFindResultCollectionState.kOkResult,
     html`${x => contextualResultsTemplate(
       x.activeMatchOrdinal,
       x.getOnFindMatchContextualResultClickedCallback()
     )}`
   )}
-      ${when(x => x.findResultState === ShorelineFindResultCollectionState.kOkNoResult,
+      ${when(x => x.resultAsClass.findResultCollectionState === ShorelineFindResultCollectionState.kOkNoResult,
     html` ${noResultsFoundCardTemplate()}`
   )}
-      ${when(x => x.findResultState === ShorelineFindResultCollectionState.kTooManyResults,
+      ${when(x => x.resultAsClass.findResultCollectionState === ShorelineFindResultCollectionState.kTooManyResults,
     html` ${tooManyResultsCardTemplate()}`
   )}
     </div>`
@@ -162,6 +163,18 @@ export class FindOnPageMainView extends FASTElement {
   // The index of the active match in the contextual results. This is used to
   // highlight the active match in the contextual results.
   private _activeMatchOrdinal!: number;
+
+  private _resultAsClass!: ShorelineFindResultAsClass;
+
+  get resultAsClass(): ShorelineFindResultAsClass {
+    Observable.track(this, 'resultAsClass');
+    return this._resultAsClass;
+  }
+
+  set resultAsClass(value: ShorelineFindResultAsClass) {
+    this._resultAsClass = value;
+    Observable.notify(this, 'resultAsClass');
+  }
 
   // Callback to select a match from the contextual results. It is passed by
   // the App view.
